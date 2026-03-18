@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { formSchema, FormData } from "@/types";
+import { FormSubmission, Question } from "@/types";
+import { supabase } from "@/lib/supabase";
 import { GlassCard, GradientButton, ProgressBar } from "@/components";
 import {
   TextInputStep,
@@ -14,114 +13,89 @@ import {
   AudioUploadStep,
 } from "@/components/forms";
 
-const FORM_STEPS = [
-  {
-    id: "name",
-    title: "Your Name",
-    placeholder: "What's your name, bestie?",
-  },
-  {
-    id: "relationship",
-    title: "Your Relationship",
-    options: [
-      { label: "👵 Grandmother", value: "grandmother" },
-      { label: "👴 Grandfather", value: "grandfather" },
-      { label: "🧑‍🦳 Aged Parent", value: "parent" },
-      { label: "👴 Uncle/Aunty", value: "uncle_aunty" },
-    ],
-  },
-  {
-    id: "reaction_when_seen",
-    title: "When They Saw You on Eid",
-    options: [
-      { label: "😍 Pure Joy", value: "pure_joy", icon: "😍" },
-      { label: "🤗 Warm Hug", value: "warm_hug", icon: "🤗" },
-      { label: "😭 Got Emotional", value: "emotional", icon: "😭" },
-      { label: "😂 Laughed at Me", value: "laughed", icon: "😂" },
-    ],
-  },
-  {
-    id: "first_interaction",
-    title: "First Thing They Did",
-    options: [
-      { label: "💸 Gave Money", value: "gave_money", icon: "💸" },
-      { label: "🍳 Made Food", value: "made_food", icon: "🍳" },
-      { label: "🗣️ Started Talking", value: "started_talking", icon: "🗣️" },
-      { label: "🤔 Asked About Exams", value: "asked_exams", icon: "🤔" },
-    ],
-  },
-  {
-    id: "text_reaction",
-    title: "What They Said About You",
-    placeholder: "How did they roast or praise you? 😂",
-    dontgetTextarea: true,
-  },
-  {
-    id: "language_guess",
-    title: "Guess the Language",
-    options: [
-      { label: "🇵🇰 Urdu", value: "urdu" },
-      { label: "🇵🇰 Punjabi", value: "punjabi" },
-      { label: "🇵🇰 Pashto", value: "pashto" },
-      { label: "🎭 English (The Classic)", value: "english" },
-      { label: "🤷 Mix of Everything", value: "mix" },
-    ],
-  },
-  {
-    id: "nickname",
-    title: "Their Nickname For You",
-    placeholder: "What did they call you? (be honest 👀)",
-  },
-  {
-    id: "eidi_amount",
-    title: "Predict the Eidi Amount",
-  },
-  {
-    id: "reason",
-    title: "Why Do They Deserve Your Love?",
-    placeholder: "Tell us why this elder is special 💚",
-    isTextarea: true,
-  },
-  {
-    id: "audio_url",
-    title: "Drop Your Eid Salam 🎤",
-  },
-];
-
 interface FormEngineProps {
-  onSubmit: (data: FormData) => Promise<void>;
+  onSubmit: (data: FormSubmission) => Promise<void>;
   isSubmitting?: boolean;
 }
 
 export function FormEngine({ onSubmit, isSubmitting = false }: FormEngineProps) {
+    const hasEmoji = (value: string) => /[\p{Extended_Pictographic}]/u.test(value);
+
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
+  const [questionsError, setQuestionsError] = useState<string | null>(null);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<string | undefined>();
+  const [answers, setAnswers] = useState<Record<number, string | number>>({});
 
-  const {
-    watch,
-    formState: { errors },
-    trigger,
-    getValues,
-    setValue,
-  } = useForm<FormData>({
-    resolver: zodResolver(formSchema),
-    mode: "onChange",
-    defaultValues: {
-      eidi_amount: 0,
-    },
-  });
+  useEffect(() => {
+    const loadQuestions = async () => {
+      setIsLoadingQuestions(true);
+      setQuestionsError(null);
 
-  const currentStep = FORM_STEPS[currentStepIndex];
-  const values = watch();
+      const { data, error } = await supabase
+        .from("questions")
+        .select("id, question_text, helper_text, question_type, options, order_index, is_active, created_at, updated_at")
+        .eq("is_active", true)
+        .order("order_index", { ascending: true });
+
+      if (error) {
+        setQuestionsError("Failed to load questions. Please refresh the page.");
+        setIsLoadingQuestions(false);
+        return;
+      }
+
+      setQuestions(data || []);
+      setCurrentStepIndex(0);
+      setIsLoadingQuestions(false);
+    };
+
+    loadQuestions();
+  }, []);
+
+  const currentStep = questions[currentStepIndex];
+  const isLastStep = currentStepIndex === questions.length - 1;
+
+  const isCurrentStepValid = useMemo(() => {
+    if (!currentStep) return false;
+
+    const currentValue = answers[currentStep.id];
+
+    if (currentStep.question_type === "audio") {
+      return true;
+    }
+
+    if (currentStep.question_type === "slider") {
+      return typeof currentValue === "number";
+    }
+
+    return typeof currentValue === "string" && currentValue.trim().length > 0;
+  }, [answers, currentStep]);
 
   const canProceed = useCallback(async () => {
-    const fieldName = currentStep.id as keyof FormData;
-    return await trigger(fieldName);
-  }, [trigger, currentStep.id]);
+    if (!currentStep) return false;
+
+    if (
+      (currentStep.question_type === "text" || currentStep.question_type === "textarea") &&
+      typeof answers[currentStep.id] === "string" &&
+      hasEmoji(String(answers[currentStep.id]))
+    ) {
+      setValidationError("Please remove emoji characters from your answer.");
+      return false;
+    }
+
+    if (isCurrentStepValid) {
+      setValidationError(undefined);
+      return true;
+    }
+
+    setValidationError("Please complete this question before continuing.");
+    return false;
+  }, [currentStep, isCurrentStepValid]);
 
   const handleNext = async () => {
     if (await canProceed()) {
-      if (currentStepIndex < FORM_STEPS.length - 1) {
+      if (currentStepIndex < questions.length - 1) {
         setCurrentStepIndex(currentStepIndex + 1);
       }
     }
@@ -135,106 +109,108 @@ export function FormEngine({ onSubmit, isSubmitting = false }: FormEngineProps) 
 
   const handleSubmit = async () => {
     if (await canProceed()) {
-      const finalData: FormData = {
-        ...values,
-        audio_url: audioUrl || undefined,
+      const finalData: FormSubmission = {
+        answers: questions
+          .map((question) => {
+            const rawValue = answers[question.id];
+
+            if (rawValue === undefined || rawValue === null) {
+              return null;
+            }
+
+            const normalized = String(rawValue).trim();
+            if (!normalized) {
+              return null;
+            }
+
+            return {
+              questionId: question.id,
+              answer: normalized,
+            };
+          })
+          .filter((item): item is { questionId: number; answer: string } => item !== null),
       };
+
       await onSubmit(finalData);
     }
   };
 
-  const renderStep = () => {
-    const stepValue = values[currentStep.id as keyof FormData];
+  const setAnswer = (questionId: number, value: string | number) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: value }));
+    if (validationError) {
+      setValidationError(undefined);
+    }
+  };
 
-    switch (currentStep.id) {
-      case "name":
-      case "nickname":
+  const renderStep = () => {
+    if (!currentStep) return null;
+
+    const stepValue = answers[currentStep.id];
+
+    switch (currentStep.question_type) {
+      case "text":
         return (
           <TextInputStep
-            label={currentStep.title}
-            placeholder={currentStep.placeholder || ""}
+            label={currentStep.question_text}
+            helperText={currentStep.helper_text}
+            placeholder="Write your answer"
             value={(stepValue as string) || ""}
-            onChange={(val) =>
-              setValue(currentStep.id as keyof FormData, val as any)
-            }
-            error={
-              errors[currentStep.id as keyof FormData]?.message as
-                | string
-                | undefined
-            }
+            onChange={(val) => setAnswer(currentStep.id, val)}
+            error={validationError}
           />
         );
 
-      case "text_reaction":
-      case "reason":
+      case "textarea":
         return (
           <TextareaStep
-            label={currentStep.title}
-            placeholder={currentStep.placeholder || ""}
+            label={currentStep.question_text}
+            helperText={currentStep.helper_text}
+            placeholder="Write your answer"
             value={(stepValue as string) || ""}
-            onChange={(val) =>
-              setValue(currentStep.id as keyof FormData, val as any)
-            }
-            error={
-              errors[currentStep.id as keyof FormData]?.message as
-                | string
-                | undefined
-            }
-            maxLength={
-              currentStep.id === "text_reaction" ? 500 : 500
-            }
+            onChange={(val) => setAnswer(currentStep.id, val)}
+            error={validationError}
+            maxLength={500}
           />
         );
 
-      case "relationship":
-      case "reaction_when_seen":
-      case "first_interaction":
-      case "language_guess":
+      case "mcq": {
+        const parsedOptions = Array.isArray(currentStep.options)
+          ? currentStep.options
+          : Array.isArray((currentStep.options as any)?.options)
+            ? (currentStep.options as any).options
+            : [];
+
         return (
           <MCQStep
-            label={currentStep.title}
-            options={(currentStep as any).options}
+            label={currentStep.question_text}
+            helperText={currentStep.helper_text}
+            options={parsedOptions}
             value={(stepValue as string) || ""}
-            onChange={(val) =>
-              setValue(currentStep.id as keyof FormData, val as any)
-            }
-            error={
-              errors[currentStep.id as keyof FormData]?.message as
-                | string
-                | undefined
-            }
+            onChange={(val) => setAnswer(currentStep.id, val)}
+            error={validationError}
           />
         );
+      }
 
-      case "eidi_amount":
+      case "slider":
         return (
           <SliderStep
-            label={currentStep.title}
-            value={(stepValue as number) || 0}
-            onChange={(val) =>
-              setValue(currentStep.id as keyof FormData, val as any)
-            }
-            error={
-              errors[currentStep.id as keyof FormData]?.message as
-                | string
-                | undefined
-            }
+            label={currentStep.question_text}
+            helperText={currentStep.helper_text}
+            value={typeof stepValue === "number" ? stepValue : 0}
+            onChange={(val) => setAnswer(currentStep.id, val)}
+            error={validationError}
+            currencyCode="BDT"
           />
         );
 
-      case "audio_url":
+      case "audio":
         return (
           <AudioUploadStep
-            label={currentStep.title}
-            onUpload={(url) => {
-              setAudioUrl(url);
-              setValue("audio_url", url);
-            }}
-            error={
-              errors[currentStep.id as keyof FormData]?.message as
-                | string
-                | undefined
-            }
+            label={currentStep.question_text}
+            helperText={currentStep.helper_text}
+            onUpload={(url) => setAnswer(currentStep.id, url)}
+            error={validationError}
           />
         );
 
@@ -243,13 +219,44 @@ export function FormEngine({ onSubmit, isSubmitting = false }: FormEngineProps) 
     }
   };
 
-  const isLastStep = currentStepIndex === FORM_STEPS.length - 1;
+  if (isLoadingQuestions) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
+        <GlassCard className="p-8 md:p-10 text-center">
+          <p className="text-white">Loading questions...</p>
+        </GlassCard>
+      </div>
+    );
+  }
+
+  if (questionsError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
+        <GlassCard className="p-8 md:p-10 text-center space-y-4">
+          <p className="text-red-300">{questionsError}</p>
+          <GradientButton onClick={() => window.location.reload()}>
+            Retry
+          </GradientButton>
+        </GlassCard>
+      </div>
+    );
+  }
+
+  if (!currentStep) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
+        <GlassCard className="p-8 md:p-10 text-center">
+          <p className="text-white/80">No active questions are available right now.</p>
+        </GlassCard>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
       <ProgressBar
         current={currentStepIndex + 1}
-        total={FORM_STEPS.length}
+        total={questions.length}
       />
 
       <motion.div
@@ -290,11 +297,7 @@ export function FormEngine({ onSubmit, isSubmitting = false }: FormEngineProps) 
               onClick={isLastStep ? handleSubmit : handleNext}
               disabled={isSubmitting}
             >
-              {isSubmitting
-                ? "Submitting... ⏳"
-                : isLastStep
-                  ? "Submit 🎉"
-                  : "Next →"}
+              {isSubmitting ? "Submitting..." : isLastStep ? "Submit" : "Next"}
             </GradientButton>
           </motion.div>
 
@@ -305,7 +308,7 @@ export function FormEngine({ onSubmit, isSubmitting = false }: FormEngineProps) 
             transition={{ delay: 0.4 }}
             className="mt-6 text-center text-white/40 text-sm"
           >
-            Step {currentStepIndex + 1} of {FORM_STEPS.length}
+            Step {currentStepIndex + 1} of {questions.length}
           </motion.p>
         </GlassCard>
       </motion.div>

@@ -8,6 +8,7 @@ interface TextInputStepProps {
   value: string;
   onChange: (value: string) => void;
   error?: string;
+  helperText?: string;
 }
 
 export function TextInputStep({
@@ -16,6 +17,7 @@ export function TextInputStep({
   value,
   onChange,
   error,
+  helperText,
 }: TextInputStepProps) {
   return (
     <motion.div
@@ -25,6 +27,10 @@ export function TextInputStep({
       className="space-y-4"
     >
       <h2 className="text-3xl font-bold text-white">{label}</h2>
+      
+      {helperText && (
+        <p className="text-white/60 text-sm">{helperText}</p>
+      )}
 
       <input
         type="text"

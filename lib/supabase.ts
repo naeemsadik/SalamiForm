@@ -9,4 +9,10 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
+if (supabaseUrl.includes("supabase.com/dashboard")) {
+  throw new Error(
+    "Invalid NEXT_PUBLIC_SUPABASE_URL. Use your project API URL (https://<project-ref>.supabase.co), not the dashboard URL."
+  );
+}
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);

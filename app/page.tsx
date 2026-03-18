@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { LandingPage, FormEngine, SuccessScreen } from "@/components";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { supabase } from "@/lib/supabase";
-import { FormData, SubmissionRecord } from "@/types";
+import { FormSubmission, SubmissionRecord } from "@/types";
 
 type AppState = "landing" | "form" | "success";
 
@@ -18,56 +18,64 @@ export default function Home() {
     setAppState("form");
   };
 
-  const handleFormSubmit = async (data: FormData) => {
+  const handleFormSubmit = async (data: FormSubmission) => {
     setIsSubmitting(true);
     try {
-      // Simulate slight delay for dramatic effect 😎
+      // Keep a small delay so button state is visible on slower devices.
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      // Insert into Supabase
-      const { data: insertedData, error } = await supabase
+      const userSessionId = crypto.randomUUID();
+
+      const { data: insertedSubmission, error: submissionError } = await supabase
         .from("submissions")
         .insert({
-          name: data.name,
-          relationship: data.relationship,
-          reaction_when_seen: data.reaction_when_seen,
-          first_interaction: data.first_interaction,
-          text_reaction: data.text_reaction,
-          language_guess: data.language_guess,
-          nickname: data.nickname,
-          eidi_amount: data.eidi_amount,
-          reason: data.reason,
-          audio_url: data.audio_url || null,
+          user_session_id: userSessionId,
         })
         .select()
         .single();
 
-      if (error) {
-        console.error("Submit error:", error);
-        alert("Something went wrong. Please try again. 😅");
+      if (submissionError || !insertedSubmission) {
+        console.error("Submit error:", submissionError);
+        console.error("Inserted submission:", insertedSubmission);
+        const errorMsg = submissionError?.message || "Failed to create submission. Please try again.";
+        alert(errorMsg);
         return;
       }
 
+      const answerRows = data.answers.map((item) => ({
+        submission_id: insertedSubmission.id,
+        question_id: item.questionId,
+        answer: item.answer,
+      }));
+
+      if (answerRows.length > 0) {
+        const { error: answerError } = await supabase
+          .from("submission_answers")
+          .insert(answerRows);
+
+        if (answerError) {
+          console.error("Answer save error:", answerError);
+          alert("Something went wrong while saving answers. Please try again.");
+          return;
+        }
+      }
+
+      const uploadedAudioAnswer = data.answers.find((item) =>
+        item.answer.startsWith("http")
+      );
+
       const submissionRecord: SubmissionRecord = {
-        id: insertedData.id,
-        name: insertedData.name,
-        relationship: insertedData.relationship,
-        reaction_when_seen: insertedData.reaction_when_seen,
-        first_interaction: insertedData.first_interaction,
-        text_reaction: insertedData.text_reaction,
-        language_guess: insertedData.language_guess,
-        nickname: insertedData.nickname,
-        eidi_amount: insertedData.eidi_amount,
-        reason: insertedData.reason,
-        audio_url: insertedData.audio_url,
-        created_at: insertedData.created_at,
+        id: insertedSubmission.id,
+        created_at: insertedSubmission.created_at,
+        answer_count: data.answers.length,
+        audio_url: uploadedAudioAnswer?.answer,
       };
 
       setSubmission(submissionRecord);
       setAppState("success");
     } catch (error) {
       console.error("Unexpected error:", error);
-      alert("Oops! Something went wrong. 😅");
+      alert("Something went wrong. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -79,7 +87,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-black via-purple-900 to-black overflow-hidden">
+    <main className="min-h-screen bg-gradient-to-br from-black via-primary-900 to-black overflow-hidden">
       <AnimatePresence mode="wait">
         {appState === "landing" && (
           <motion.div key="landing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>

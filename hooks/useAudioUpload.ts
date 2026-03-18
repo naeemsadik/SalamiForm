@@ -8,7 +8,7 @@ interface UseAudioUploadReturn {
   audioUrl: string | null;
   isLoading: boolean;
   error: string | null;
-  uploadFile: (file: File) => Promise<void>;
+  uploadFile: (file: File) => Promise<string>;
   clearFile: () => void;
   duration: number;
 }
@@ -20,14 +20,14 @@ export function useAudioUpload(): UseAudioUploadReturn {
   const [error, setError] = useState<string | null>(null);
   const [duration, setDuration] = useState(0);
 
-  const uploadFile = async (selectedFile: File) => {
+  const uploadFile = async (selectedFile: File): Promise<string> => {
     setError(null);
     setIsLoading(true);
 
     try {
       // Validate file type
       if (!selectedFile.type.startsWith("audio/")) {
-        throw new Error("No robotic Eid Mubarak allowed - audio files only! 🎤");
+        throw new Error("Only audio files are allowed.");
       }
 
       // Validate duration
@@ -60,10 +60,12 @@ export function useAudioUpload(): UseAudioUploadReturn {
 
       setAudioUrl(urlData.publicUrl);
       setFile(selectedFile);
+      return urlData.publicUrl;
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Upload failed";
       setError(message);
+      throw err;
     } finally {
       setIsLoading(false);
     }

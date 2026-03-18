@@ -10,6 +10,7 @@ interface TextareaStepProps {
   onChange: (value: string) => void;
   error?: string;
   maxLength?: number;
+  helperText?: string;
 }
 
 export function TextareaStep({
@@ -19,6 +20,7 @@ export function TextareaStep({
   onChange,
   error,
   maxLength = 500,
+  helperText,
 }: TextareaStepProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -39,6 +41,10 @@ export function TextareaStep({
       className="space-y-4"
     >
       <h2 className="text-3xl font-bold text-white">{label}</h2>
+
+      {helperText && (
+        <p className="text-white/60 text-sm">{helperText}</p>
+      )}
 
       <textarea
         ref={textareaRef}

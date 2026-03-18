@@ -1,5 +1,40 @@
 @import "tailwindcss";
 
+@theme {
+  --color-primary-50: #fef5f5;
+  --color-primary-100: #fde8e8;
+  --color-primary-200: #fbd4d7;
+  --color-primary-300: #f8b8be;
+  --color-primary-400: #f49fa8;
+  --color-primary-500: #cc3c4c;
+  --color-primary-600: #b83343;
+  --color-primary-700: #a12a39;
+  --color-primary-800: #8a2230;
+  --color-primary-900: #6b1a27;
+
+  --color-accent-50: #fffbf5;
+  --color-accent-100: #fff8ed;
+  --color-accent-200: #fef0dc;
+  --color-accent-300: #fce5c8;
+  --color-accent-400: #fbdab4;
+  --color-accent-500: #facd96;
+  --color-accent-600: #f8b870;
+  --color-accent-700: #f49d44;
+  --color-accent-800: #e98a2e;
+  --color-accent-900: #d97717;
+
+  --color-secondary-50: #f5f3fa;
+  --color-secondary-100: #ebe5f5;
+  --color-secondary-200: #d5c2ea;
+  --color-secondary-300: #ba9ade;
+  --color-secondary-400: #9d72d2;
+  --color-secondary-500: #3c1c94;
+  --color-secondary-600: #36187d;
+  --color-secondary-700: #2f1466;
+  --color-secondary-800: #28104f;
+  --color-secondary-900: #200c38;
+}
+
 @layer theme {
   :root {
     color-scheme: dark;
@@ -15,7 +50,7 @@ html {
 }
 
 body {
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a0033 100%);
+  background: linear-gradient(135deg, #0a0a0a 0%, #2a0a15 50%, #1a080f 100%);
   color: var(--foreground);
   font-family: var(--font-space-grotesk);
   overflow-x: hidden;
@@ -31,10 +66,10 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(168, 85, 247, 0.5);
+  background: rgba(204, 60, 76, 0.5);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(168, 85, 247, 0.8);
+  background: rgba(204, 60, 76, 0.8);
 }

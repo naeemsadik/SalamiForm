@@ -7,7 +7,7 @@ interface LoadingOverlayProps {
 }
 
 export function LoadingOverlay({
-  message = "Calculating your Eidi...",
+  message = "Submitting your response...",
 }: LoadingOverlayProps) {
   return (
     <motion.div
@@ -25,9 +25,9 @@ export function LoadingOverlay({
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-          className="text-5xl mb-6 mx-auto w-fit"
+          className="text-2xl mb-6 mx-auto w-fit text-white/70"
         >
-          ⏳
+          Loading
         </motion.div>
 
         <h2 className="text-2xl font-bold text-white mb-3">{message}</h2>
@@ -53,7 +53,7 @@ export function LoadingOverlay({
         </motion.div>
 
         <p className="text-white/40 text-sm mt-6">
-          Judging your answers...
+          Please wait a moment.
         </p>
       </motion.div>
     </motion.div>

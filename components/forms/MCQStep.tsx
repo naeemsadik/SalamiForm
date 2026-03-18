@@ -15,6 +15,7 @@ interface MCQStepProps {
   value: string;
   onChange: (value: string) => void;
   error?: string;
+  helperText?: string;
 }
 
 export function MCQStep({
@@ -23,6 +24,7 @@ export function MCQStep({
   value,
   onChange,
   error,
+  helperText,
 }: MCQStepProps) {
   return (
     <motion.div
@@ -32,6 +34,10 @@ export function MCQStep({
       className="space-y-6"
     >
       <h2 className="text-3xl font-bold text-white">{label}</h2>
+      
+      {helperText && (
+        <p className="text-white/60 text-sm">{helperText}</p>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {options.map((option) => (

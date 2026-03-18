@@ -9,11 +9,11 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Eid Salami Protocol",
-  description: "Fill carefully. Your Eidi depends on your answers.",
+  title: "Eid Greeting Form",
+  description: "A simple and friendly Eid response form.",
   openGraph: {
-    title: "Eid Salami Protocol",
-    description: "Fill carefully. Your Eidi depends on your answers.",
+    title: "Eid Greeting Form",
+    description: "A simple and friendly Eid response form.",
     type: "website",
   },
 };
