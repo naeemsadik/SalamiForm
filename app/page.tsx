@@ -1,65 +1,111 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { LandingPage, FormEngine, SuccessScreen } from "@/components";
+import { LoadingOverlay } from "@/components/LoadingOverlay";
+import { supabase } from "@/lib/supabase";
+import { FormData, SubmissionRecord } from "@/types";
+
+type AppState = "landing" | "form" | "success";
 
 export default function Home() {
+  const [appState, setAppState] = useState<AppState>("landing");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submission, setSubmission] = useState<SubmissionRecord | null>(null);
+
+  const handleStartForm = () => {
+    setAppState("form");
+  };
+
+  const handleFormSubmit = async (data: FormData) => {
+    setIsSubmitting(true);
+    try {
+      // Simulate slight delay for dramatic effect 😎
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      // Insert into Supabase
+      const { data: insertedData, error } = await supabase
+        .from("submissions")
+        .insert({
+          name: data.name,
+          relationship: data.relationship,
+          reaction_when_seen: data.reaction_when_seen,
+          first_interaction: data.first_interaction,
+          text_reaction: data.text_reaction,
+          language_guess: data.language_guess,
+          nickname: data.nickname,
+          eidi_amount: data.eidi_amount,
+          reason: data.reason,
+          audio_url: data.audio_url || null,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Submit error:", error);
+        alert("Something went wrong. Please try again. 😅");
+        return;
+      }
+
+      const submissionRecord: SubmissionRecord = {
+        id: insertedData.id,
+        name: insertedData.name,
+        relationship: insertedData.relationship,
+        reaction_when_seen: insertedData.reaction_when_seen,
+        first_interaction: insertedData.first_interaction,
+        text_reaction: insertedData.text_reaction,
+        language_guess: insertedData.language_guess,
+        nickname: insertedData.nickname,
+        eidi_amount: insertedData.eidi_amount,
+        reason: insertedData.reason,
+        audio_url: insertedData.audio_url,
+        created_at: insertedData.created_at,
+      };
+
+      setSubmission(submissionRecord);
+      setAppState("success");
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      alert("Oops! Something went wrong. 😅");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handlePlayAgain = () => {
+    setAppState("landing");
+    setSubmission(null);
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+    <main className="min-h-screen bg-gradient-to-br from-black via-purple-900 to-black overflow-hidden">
+      <AnimatePresence mode="wait">
+        {appState === "landing" && (
+          <motion.div key="landing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <LandingPage onStart={handleStartForm} />
+          </motion.div>
+        )}
+
+        {appState === "form" && (
+          <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <FormEngine onSubmit={handleFormSubmit} isSubmitting={isSubmitting} />
+          </motion.div>
+        )}
+
+        {appState === "success" && submission && (
+          <motion.div key="success" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <SuccessScreen
+              submission={submission}
+              onPlayAgain={handlePlayAgain}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isSubmitting && <LoadingOverlay />}
+      </AnimatePresence>
+    </main>
   );
 }
