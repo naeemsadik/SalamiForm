@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Eid favicon">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1220" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="moon" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fde68a" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#bg)" />
+  <circle cx="30" cy="31" r="17" fill="url(#moon)" />
+  <circle cx="37" cy="27" r="15" fill="url(#bg)" />
+  <path d="M46 19l1.8 4.2L52 25l-4.2 1.8L46 31l-1.8-4.2L40 25l4.2-1.8L46 19z" fill="#fef9c3" />
+</svg>

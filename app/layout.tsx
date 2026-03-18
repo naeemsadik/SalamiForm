@@ -9,11 +9,16 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Eid Greeting Form",
+  title: "Eid Salami Form",
   description: "A simple and friendly Eid response form.",
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
   openGraph: {
-    title: "Eid Greeting Form",
-    description: "A simple and friendly Eid response form.",
+    title: "Eid Salami Form",
+    description: "এইটা ফিলাপ না করলে কোনো সালামি নাই",
     type: "website",
   },
 };
