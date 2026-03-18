@@ -13,7 +13,7 @@ interface SuccessScreenProps {
 
 export function SuccessScreen({ submission, onPlayAgain }: SuccessScreenProps) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-10 sm:py-12 relative overflow-hidden">
       {/* Confetti Animation */}
       <div className="absolute inset-0 pointer-events-none">
         <Lottie
@@ -27,17 +27,17 @@ export function SuccessScreen({ submission, onPlayAgain }: SuccessScreenProps) {
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6 }}
-        className="relative z-10 text-center max-w-2xl"
+        className="relative z-10 text-center max-w-2xl w-full"
       >
         <motion.div
           animate={{ rotate: [0, 10, -10, 0] }}
           transition={{ duration: 2, repeat: Infinity }}
-          className="text-4xl mb-6 text-white/80"
+          className="text-2xl sm:text-4xl mb-4 sm:mb-6 text-white/80"
         >
-          Thank you
+          ঈদ মোবারক!
         </motion.div>
 
-        <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-primary-300 via-accent-300 to-primary-300 bg-clip-text text-transparent">
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold leading-tight mb-4 bg-gradient-to-r from-primary-300 via-accent-300 to-primary-300 bg-clip-text text-transparent">
           Submission Received
         </h1>
 
@@ -45,9 +45,9 @@ export function SuccessScreen({ submission, onPlayAgain }: SuccessScreenProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="text-xl text-white/70 mb-8"
+          className="text-base sm:text-xl text-white/70 mb-6 sm:mb-8"
         >
-          Your response has been saved successfully.
+          তোকে সালামি দেয়া যায় কিনা ভেবে দেখবো
         </motion.p>
 
         {/* Show audio if uploaded */}
@@ -56,7 +56,7 @@ export function SuccessScreen({ submission, onPlayAgain }: SuccessScreenProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="mb-8 rounded-2xl bg-white/10 border border-white/20 p-6 backdrop-blur-sm"
+            className="mb-6 sm:mb-8 rounded-2xl bg-white/10 border border-white/20 p-4 sm:p-6 backdrop-blur-sm"
           >
             <p className="text-white/60 mb-4 text-sm">Your voice recording:</p>
             <audio
@@ -67,7 +67,7 @@ export function SuccessScreen({ submission, onPlayAgain }: SuccessScreenProps) {
           </motion.div>
         )}
 
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
@@ -89,16 +89,16 @@ export function SuccessScreen({ submission, onPlayAgain }: SuccessScreenProps) {
               </p>
             </div>
           </div>
-        </motion.div>
+        </motion.div> */}
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9 }}
         >
-          <GradientButton onClick={onPlayAgain} className="text-lg px-10 py-4">
+          {/* <GradientButton onClick={onPlayAgain} className="text-lg px-10 py-4">
             Submit Another Response
-          </GradientButton>
+          </GradientButton> */}
         </motion.div>
       </motion.div>
     </div>

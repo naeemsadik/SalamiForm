@@ -31,15 +31,15 @@ export function MCQStep({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="space-y-6"
+      className="space-y-5 sm:space-y-6"
     >
-      <h2 className="text-3xl font-bold text-white">{label}</h2>
+      <h2 className="text-2xl sm:text-3xl font-bold leading-snug text-white">{label}</h2>
       
       {helperText && (
         <p className="text-white/60 text-sm">{helperText}</p>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
         {options.map((option) => (
           <OptionCard
             key={option.value}

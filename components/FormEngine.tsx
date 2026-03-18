@@ -253,7 +253,7 @@ export function FormEngine({ onSubmit, isSubmitting = false }: FormEngineProps) 
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4py-8">
       <ProgressBar
         current={currentStepIndex + 1}
         total={questions.length}
@@ -265,7 +265,7 @@ export function FormEngine({ onSubmit, isSubmitting = false }: FormEngineProps) 
         transition={{ duration: 0.5 }}
         className="w-full max-w-2xl"
       >
-        <GlassCard className="p-8 md:p-12">
+        <GlassCard className="p-5 sm:p-7 md:p-12">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentStepIndex}
@@ -283,12 +283,12 @@ export function FormEngine({ onSubmit, isSubmitting = false }: FormEngineProps) 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="mt-12 flex gap-4 justify-between"
+            className="mt-8 sm:mt-12 flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 justify-between"
           >
             <GradientButton
               onClick={handleBack}
               disabled={currentStepIndex === 0}
-              className={`${currentStepIndex === 0 ? "invisible" : ""}`}
+              className={`${currentStepIndex === 0 ? "hidden sm:invisible" : "w-full sm:w-auto"}`}
             >
               ← Back
             </GradientButton>
@@ -296,6 +296,7 @@ export function FormEngine({ onSubmit, isSubmitting = false }: FormEngineProps) 
             <GradientButton
               onClick={isLastStep ? handleSubmit : handleNext}
               disabled={isSubmitting}
+              className="w-full sm:w-auto"
             >
               {isSubmitting ? "Submitting..." : isLastStep ? "Submit" : "Next"}
             </GradientButton>

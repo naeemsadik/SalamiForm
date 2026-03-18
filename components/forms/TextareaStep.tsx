@@ -40,7 +40,7 @@ export function TextareaStep({
       exit={{ opacity: 0, y: -20 }}
       className="space-y-4"
     >
-      <h2 className="text-3xl font-bold text-white">{label}</h2>
+      <h2 className="text-2xl sm:text-3xl font-bold leading-snug text-white">{label}</h2>
 
       {helperText && (
         <p className="text-white/60 text-sm">{helperText}</p>
@@ -53,19 +53,20 @@ export function TextareaStep({
         onChange={(e) => onChange(e.target.value.slice(0, maxLength))}
         className={`
           w-full
-          px-6
-          py-4
+          px-4 sm:px-6
+          py-3 sm:py-4
           rounded-2xl
           bg-white/5
           border-2
           backdrop-blur-sm
           text-white
+          text-base
           placeholder-white/40
           transition-all
           duration-300
           focus:outline-none
           resize-none
-          min-h-32
+          min-h-28 sm:min-h-32
           ${
             error
               ? "border-red-500 focus:border-red-400"

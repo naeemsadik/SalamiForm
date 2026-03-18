@@ -140,16 +140,16 @@ export function AudioUploadStep({
         exit={{ opacity: 0, y: -20 }}
         className="space-y-6"
       >
-        <h2 className="text-3xl font-bold text-white">{label}</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold leading-snug text-white">{label}</h2>
 
         {helperText && (
           <p className="text-white/60 text-sm">{helperText}</p>
         )}
 
-        <div className="rounded-2xl bg-white/5 border border-white/20 p-6 space-y-4">
+        <div className="rounded-2xl bg-white/5 border border-white/20 p-4 sm:p-6 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white font-medium">📋 {file.name}</p>
+              <p className="text-white font-medium break-all">{file.name}</p>
               <p className="text-white/60 text-sm">Uploaded successfully</p>
             </div>
             <span className="text-sm text-green-300">Ready</span>
@@ -179,20 +179,20 @@ export function AudioUploadStep({
       exit={{ opacity: 0, y: -20 }}
       className="space-y-6"
     >
-      <h2 className="text-3xl font-bold text-white">{label}</h2>
+      <h2 className="text-2xl sm:text-3xl font-bold leading-snug text-white">{label}</h2>
 
       {helperText && (
         <p className="text-white/60 text-sm">{helperText}</p>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
         <motion.button
           type="button"
           onClick={isRecording ? stopRecording : startRecording}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           disabled={isLoading}
-          className={`rounded-2xl border p-5 text-left transition-all ${
+          className={`rounded-2xl border p-4 sm:p-5 text-left transition-all ${
             isRecording
               ? "border-red-400 bg-red-500/10"
               : "border-white/30 bg-white/5 hover:border-primary-400"
@@ -212,7 +212,7 @@ export function AudioUploadStep({
           onDragOver={handleDragOver}
           onDrop={handleDrop}
           whileHover={{ scale: 1.02 }}
-          className="rounded-2xl border border-dashed border-white/30 bg-white/5 p-5 text-left transition-all cursor-pointer hover:border-primary-400"
+          className="rounded-2xl border border-dashed border-white/30 bg-white/5 p-4 sm:p-5 text-left transition-all cursor-pointer hover:border-primary-400"
           onClick={() => fileInputRef.current?.click()}
         >
           <input

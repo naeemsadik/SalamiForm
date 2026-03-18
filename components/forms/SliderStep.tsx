@@ -19,7 +19,7 @@ export function SliderStep({
   value,
   onChange,
   min = 0,
-  max = 100000,
+  max = 50,
   step = 1,
   error,
   helperText,
@@ -32,7 +32,7 @@ export function SliderStep({
       exit={{ opacity: 0, y: -20 }}
       className="space-y-6"
     >
-      <h2 className="text-3xl font-bold text-white">{label}</h2>
+      <h2 className="text-2xl sm:text-3xl font-bold leading-snug text-white">{label}</h2>
 
       {helperText && (
         <p className="text-white/60 text-sm">{helperText}</p>
@@ -58,12 +58,12 @@ export function SliderStep({
           `}
         />
 
-        <div className="flex justify-between items-center text-white/60 text-sm">
-          <span>{currencyCode} {min.toLocaleString()}</span>
-          <span className="text-2xl font-bold text-primary-400">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 items-center text-white/60 text-sm">
+          <span className="text-center sm:text-left">{currencyCode} {min.toLocaleString()}</span>
+          <span className="text-2xl font-bold text-primary-400 text-center">
             {currencyCode} {value.toLocaleString()}
           </span>
-          <span>{currencyCode} {max.toLocaleString()}</span>
+          <span className="text-center sm:text-right">{currencyCode} {max.toLocaleString()}</span>
         </div>
       </div>
 
