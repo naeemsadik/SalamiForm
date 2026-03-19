@@ -27,6 +27,9 @@ export function FormEngine({ onSubmit, isSubmitting = false }: FormEngineProps) 
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [validationError, setValidationError] = useState<string | undefined>();
   const [answers, setAnswers] = useState<Record<number, string | number>>({});
+  const [answeredQuestionIds, setAnsweredQuestionIds] = useState<
+    Record<number, boolean>
+  >({});
 
   useEffect(() => {
     const loadQuestions = async () => {
@@ -59,10 +62,15 @@ export function FormEngine({ onSubmit, isSubmitting = false }: FormEngineProps) 
   const isCurrentStepValid = useMemo(() => {
     if (!currentStep) return false;
 
+    const hasAnsweredCurrent = answeredQuestionIds[currentStep.id] === true;
+    if (!hasAnsweredCurrent) return false;
+
     const currentValue = answers[currentStep.id];
 
     if (currentStep.question_type === "audio") {
-      return true;
+      return (
+        typeof currentValue === "string" && currentValue.trim().length > 0
+      );
     }
 
     if (currentStep.question_type === "slider") {
@@ -70,7 +78,7 @@ export function FormEngine({ onSubmit, isSubmitting = false }: FormEngineProps) 
     }
 
     return typeof currentValue === "string" && currentValue.trim().length > 0;
-  }, [answers, currentStep]);
+  }, [answers, answeredQuestionIds, currentStep]);
 
   const canProceed = useCallback(async () => {
     if (!currentStep) return false;
@@ -137,6 +145,7 @@ export function FormEngine({ onSubmit, isSubmitting = false }: FormEngineProps) 
 
   const setAnswer = (questionId: number, value: string | number) => {
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
+    setAnsweredQuestionIds((prev) => ({ ...prev, [questionId]: true }));
     if (validationError) {
       setValidationError(undefined);
     }
@@ -253,7 +262,7 @@ export function FormEngine({ onSubmit, isSubmitting = false }: FormEngineProps) 
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4py-8">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
       <ProgressBar
         current={currentStepIndex + 1}
         total={questions.length}
